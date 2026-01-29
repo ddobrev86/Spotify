@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.spotify.model;
+package bg.sofia.uni.fmi.mjt.spotify.model.song;
 
 public class Song {
     private static int idCounter = 0;
@@ -17,6 +17,11 @@ public class Song {
         this.totalPlays = 0;
     }
 
+    @SuppressWarnings("checkstyle:TodoComment")
+    public void play() {
+        totalPlays++;
+    }
+
     public String name() {
         return this.name;
     }
@@ -31,5 +36,14 @@ public class Song {
 
     int id() {
         return this.id;
+    }
+
+    public int totalPlays() {
+        return this.totalPlays;
+    }
+
+    @Override
+    public String toString() {
+        return "Song " + this.name + " by " + artist;
     }
 }

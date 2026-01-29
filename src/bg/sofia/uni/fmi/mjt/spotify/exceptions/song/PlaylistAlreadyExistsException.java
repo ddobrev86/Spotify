@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.spotify.exceptions;
+package bg.sofia.uni.fmi.mjt.spotify.exceptions.song;
 
 public class PlaylistAlreadyExistsException extends RuntimeException {
     public PlaylistAlreadyExistsException(String message) {
