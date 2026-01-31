@@ -56,21 +56,23 @@ public class SongManager {
         allPlaylists.put(name, playlistToAdd);
     }
 
-    public List<Song> search(String[] keywords) {
+    public List<String> search(String[] keywords) {
         return allSongs.values()
             .stream()
             .filter(song ->
                 Arrays.stream(keywords)
                     .anyMatch(keyword ->
                         song.name().toLowerCase().contains(keyword.toLowerCase())))
+            .map(Song::toString)
             .toList();
     }
 
-    public List<Song> top(int topSongs) {
+    public List<String> top(int topSongs) {
         return allSongs.values()
             .stream()
             .sorted(new SongByPlaysComparator().reversed())
             .limit(topSongs)
+            .map(Song::toString)
             .toList();
     }
 
@@ -87,17 +89,12 @@ public class SongManager {
         allPlaylists.get(playlistName).addSong(songToAdd, userEmail);
     }
 
-    public String showPlaylist(String playlistName) {
+    public List<String> showPlaylist(String playlistName) {
         if (!allPlaylists.containsKey(playlistName)) {
             throw new PlaylistNotFoundException("Playlist " + playlistName + " doesn't exist");
         }
 
-        List<String> result = allPlaylists.get(playlistName).showPlaylist();
-        if (result.isEmpty()) {
-            return EMPTY_PLAYLIST_MESSAGE;
-        }
-
-        return String.join(System.lineSeparator(), result);
+        return allPlaylists.get(playlistName).showPlaylist();
     }
 
     public void playSong(String songName) {

@@ -1,4 +1,84 @@
 package bg.sofia.uni.fmi.mjt.spotify.client;
 
+import bg.sofia.uni.fmi.mjt.spotify.communication.ClientQuery;
+import bg.sofia.uni.fmi.mjt.spotify.communication.ServerResponse;
+import bg.sofia.uni.fmi.mjt.spotify.model.user.User;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.util.Scanner;
+
+import static bg.sofia.uni.fmi.mjt.spotify.util.BufferOperations.read;
+import static bg.sofia.uni.fmi.mjt.spotify.util.BufferOperations.write;
+
 public class SpotifyClient {
+    private static final Gson GSON = new Gson();
+
+    private static final int DEFAULT_PORT = 4000;
+    private static final int BUFFER_SIZE = 1024;
+
+    private final int port;
+    private ByteBuffer buffer;
+    private User user;
+
+    public SpotifyClient(int port) {
+        this.port = port;
+        this.user = null;
+    }
+
+    private String processInput(String input) {
+        String email = (user == null ? null : user.email());
+        return GSON.toJson(ClientQuery.of(email, input));
+    }
+
+    private ServerResponse processServerOutput(String input) {
+        return GSON.fromJson(input, ServerResponse.class);
+    }
+
+    private ServerResponse handleServerCommunication(String input, SocketChannel socketChannel)
+        throws IOException {
+        write(buffer, socketChannel, processInput(input));
+        String reply = read(buffer, socketChannel);
+
+        return processServerOutput(reply);
+    }
+
+    public void runClient() {
+        buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
+
+        try (SocketChannel socketChannel = SocketChannel.open();
+             Scanner scanner = new Scanner(System.in)) {
+
+            socketChannel.connect(new InetSocketAddress("localhost", port));
+
+            System.out.println("Connected to server successfully");
+
+            String input = "";
+            while (!input.equals("disconnect")) {
+                System.out.println("Enter command: ");
+                input = scanner.nextLine();
+                ServerResponse output = handleServerCommunication(input, socketChannel);
+
+                if (output == null) {
+                    continue;
+                }
+
+                if (output.user() != null) {
+                    this.user = output.user();
+                }
+
+                System.out.println(output.message());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("There is a problem with the network communication", e);
+        }
+    }
+
+    static void main() {
+        SpotifyClient client = new SpotifyClient(DEFAULT_PORT);
+        client.runClient();
+    }
 }

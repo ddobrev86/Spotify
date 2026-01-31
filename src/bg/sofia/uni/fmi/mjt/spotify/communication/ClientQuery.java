@@ -12,4 +12,12 @@ public class ClientQuery {
     public static ClientQuery of(String email, String command) {
         return new ClientQuery(email, command);
     }
+
+    public String email() {
+        return email;
+    }
+
+    public String command() {
+        return command;
+    }
 }

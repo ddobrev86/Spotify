@@ -9,7 +9,7 @@ public class User {
         this.password = password;
     }
 
-    public boolean isCorrectPassword(String password) {
+    public boolean comparePassword(String password) {
         return this.password.equals(password);
     }
 
