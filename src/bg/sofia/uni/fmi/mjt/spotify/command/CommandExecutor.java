@@ -3,6 +3,7 @@ package bg.sofia.uni.fmi.mjt.spotify.command;
 import bg.sofia.uni.fmi.mjt.spotify.communication.ResponseStatus;
 import bg.sofia.uni.fmi.mjt.spotify.communication.ServerResponse;
 import bg.sofia.uni.fmi.mjt.spotify.exceptions.InvalidCommandException;
+import bg.sofia.uni.fmi.mjt.spotify.exceptions.InvalidArgumentCountException;
 import bg.sofia.uni.fmi.mjt.spotify.model.song.SongManager;
 import bg.sofia.uni.fmi.mjt.spotify.model.user.User;
 import bg.sofia.uni.fmi.mjt.spotify.model.user.UserManager;
@@ -53,8 +54,8 @@ public class CommandExecutor {
 
     private ServerResponse register(String[] args, UserManager userManager) {
         if (args.length != ACCOUNT_OPERATIONS_ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(REGISTER + " accepts only two values: email and password." +
-                "Example: " + REGISTER + " <email> <password>");
+            throw new InvalidArgumentCountException(REGISTER + " accepts only two values: email and password." +
+                "Example: " + REGISTER + " <email> <password>", REGISTER);
         }
 
         String email = args[0];
@@ -67,8 +68,8 @@ public class CommandExecutor {
 
     private ServerResponse login(String[] args, UserManager userManager) {
         if (args.length != ACCOUNT_OPERATIONS_ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(LOGIN + " accepts only two values: email and password." +
-                "Example: " + LOGIN + " <email> <password>");
+            throw new InvalidArgumentCountException(LOGIN + " accepts only two values: email and password." +
+                "Example: " + LOGIN + " <email> <password>", LOGIN);
         }
 
         String email = args[0];
@@ -88,8 +89,8 @@ public class CommandExecutor {
 
     private ServerResponse search(String[] args, SongManager songManager) {
         if (args.length < SEARCH_MIN_ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(SEARCH + " must be given at least one keyword." +
-                "Example: " + SEARCH + " <keyword> [<keywords>]");
+            throw new InvalidArgumentCountException(SEARCH + " must be given at least one keyword." +
+                "Example: " + SEARCH + " <keyword> [<keywords>]", SEARCH);
         }
 
         List<String> result = songManager.search(args);
@@ -100,8 +101,8 @@ public class CommandExecutor {
 
     private ServerResponse top(String[] args, SongManager songManager) {
         if (args.length != TOP_ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(TOP + " accepts only one value: number." +
-                "Example: " + TOP + " <number>");
+            throw new InvalidArgumentCountException(TOP + " accepts only one value: number." +
+                "Example: " + TOP + " <number>", TOP);
         }
 
         int number = Integer.parseInt(args[0]);
@@ -113,8 +114,8 @@ public class CommandExecutor {
 
     private ServerResponse createPlaylist(String[] args, String userEmail, SongManager songManager) {
         if (args.length != CREATE_PLAYLIST_ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(CREATE_PLAYLIST + " accepts only one value: name_of_playlist." +
-                "Example: " + CREATE_PLAYLIST + " <name_of_playlist>");
+            throw new InvalidArgumentCountException(CREATE_PLAYLIST + " accepts only one value: name_of_playlist." +
+                "Example: " + CREATE_PLAYLIST + " <name_of_playlist>", CREATE_PLAYLIST);
         }
 
         String playlistName = args[0];
@@ -126,8 +127,9 @@ public class CommandExecutor {
 
     private ServerResponse addSongToPlaylist(String[] args, String userEmail, SongManager songManager) {
         if (args.length != ADD_SONG_TO_PLAYLIST_ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(ADD_SONG_TO + " accepts only two values: name_of_playlist and song." +
-                "Example: " + ADD_SONG_TO + " <name_of_playlist> <song>");
+            throw new InvalidArgumentCountException(ADD_SONG_TO +
+                " accepts only two values: name_of_playlist and song." +
+                "Example: " + ADD_SONG_TO + " <name_of_playlist> <song>", ADD_SONG_TO);
         }
 
         String playlistName = args[0];
@@ -140,8 +142,8 @@ public class CommandExecutor {
 
     private ServerResponse showPlaylist(String[] args, SongManager songManager) {
         if (args.length != SHOW_PLAYLIST_ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(SHOW_PLAYLIST + " accepts only one value: name_of_playlist." +
-                "Example: " + SHOW_PLAYLIST + " <name_of_playlist>");
+            throw new InvalidArgumentCountException(SHOW_PLAYLIST + " accepts only one value: name_of_playlist." +
+                "Example: " + SHOW_PLAYLIST + " <name_of_playlist>", SHOW_PLAYLIST);
         }
 
         String playlistName = args[0];
@@ -153,8 +155,8 @@ public class CommandExecutor {
 
     private ServerResponse play(String[] args, SongManager songManager) {
         if (args.length != PLAY_ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(PLAY + " accepts only one value: song." +
-                "Example: " + PLAY + " <song>");
+            throw new InvalidArgumentCountException(PLAY + " accepts only one value: song." +
+                "Example: " + PLAY + " <song>", PLAY);
         }
 
         String songName = args[0];

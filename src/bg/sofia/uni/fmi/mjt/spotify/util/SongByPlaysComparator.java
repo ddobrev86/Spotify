@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.spotify;
+package bg.sofia.uni.fmi.mjt.spotify.util;
 
 import bg.sofia.uni.fmi.mjt.spotify.model.song.Song;
 

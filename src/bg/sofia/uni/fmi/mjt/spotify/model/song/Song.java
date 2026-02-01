@@ -1,20 +1,39 @@
 package bg.sofia.uni.fmi.mjt.spotify.model.song;
 
 public class Song {
-    private static int idCounter = 0;
+    private static final int NAME_INDEX = 0;
+    private static final int ARTIST_INDEX = 1;
+    private static final int URL_INDEX = 2;
+    private static final int TOTAL_PLAYS_INDEX = 3;
 
-    private int id;
-    private String name;
-    private String artist;
-    private String url;
+    private final String name;
+    private final String artist;
+    private final String url;
     private int totalPlays;
 
+    public Song(String name, String artist, String url, int totalPlays) {
+        this.artist = artist;
+        this.name = name;
+        this.url = url;
+        this.totalPlays = totalPlays;
+    }
+
     public Song(String name, String artist, String url) {
-        this.id = idCounter++;
         this.artist = artist;
         this.name = name;
         this.url = url;
         this.totalPlays = 0;
+    }
+
+    public static Song of(String line) {
+        String[] tokens = line.split(" ");
+
+        String name = tokens[NAME_INDEX];
+        String artist = tokens[ARTIST_INDEX];
+        String url = tokens[URL_INDEX];
+        int totalPlays = Integer.parseInt(tokens[TOTAL_PLAYS_INDEX]);
+
+        return new Song(name, artist, url, totalPlays);
     }
 
     @SuppressWarnings("checkstyle:TodoComment")
@@ -32,10 +51,6 @@ public class Song {
 
     public String url() {
         return this.url;
-    }
-
-    int id() {
-        return this.id;
     }
 
     public int totalPlays() {

@@ -38,12 +38,27 @@ public class Playlist {
             .toList();
     }
 
+    public List<String> showSongsNamesOnly() {
+        return songs.values()
+            .stream()
+            .map(Song::name)
+            .toList();
+    }
+
     public String name() {
         return this.name;
     }
 
     public String userEmail() {
         return this.ownerEmail;
+    }
+
+    public boolean isPrivate() {
+        return this.isPrivate;
+    }
+
+    public int songCount() {
+        return this.songs.size();
     }
 
     public void togglePrivacy(String userEmail) {

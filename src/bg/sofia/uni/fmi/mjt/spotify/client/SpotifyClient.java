@@ -46,6 +46,22 @@ public class SpotifyClient {
         return processServerOutput(reply);
     }
 
+    private void printAvailableCommands() {
+        System.out.println("\nAvailable actions:");
+        if (this.user == null) {
+            System.out.println("register <email> <password>");
+            System.out.println("login <email> <password>");
+        } else {
+            System.out.println("search <keywords>");
+            System.out.println("top <number>");
+            System.out.println("create-playlist <name_of_the_playlist>");
+            System.out.println("add-song-to <name_of_the_playlist> <song>");
+            System.out.println("show-playlist <name_of_the_playlist>");
+            System.out.println("play <song>");
+        }
+        System.out.println("\nEnter command: ");
+    }
+
     public void runClient() {
         buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 
@@ -58,7 +74,7 @@ public class SpotifyClient {
 
             String input = "";
             while (!input.equals("disconnect")) {
-                System.out.println("Enter command: ");
+                printAvailableCommands();
                 input = scanner.nextLine();
                 ServerResponse output = handleServerCommunication(input, socketChannel);
 

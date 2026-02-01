@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.spotify.model.song;
 
-import bg.sofia.uni.fmi.mjt.spotify.SongByPlaysComparator;
+import bg.sofia.uni.fmi.mjt.spotify.util.SongByPlaysComparator;
 import bg.sofia.uni.fmi.mjt.spotify.exceptions.song.PlaylistAlreadyExistsException;
 import bg.sofia.uni.fmi.mjt.spotify.exceptions.song.PlaylistNotFoundException;
 import bg.sofia.uni.fmi.mjt.spotify.exceptions.song.SongAlreadyExistsException;
