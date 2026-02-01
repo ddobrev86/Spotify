@@ -6,12 +6,12 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public class BufferOperations {
-    public static String read(ByteBuffer buffer, SocketChannel clientChannel) throws IOException {
+    public static String read(ByteBuffer buffer, SocketChannel socketChannel) throws IOException {
         buffer.clear();
 
-        int readBytes = clientChannel.read(buffer);
+        int readBytes = socketChannel.read(buffer);
         if (readBytes < 0) {
-            clientChannel.close();
+            socketChannel.close();
             return null;
         }
 
@@ -23,12 +23,12 @@ public class BufferOperations {
         return new String(clientInputBytes, StandardCharsets.UTF_8);
     }
 
-    public static void write(ByteBuffer buffer, SocketChannel clientChannel, String output) throws IOException {
+    public static void write(ByteBuffer buffer, SocketChannel socketChannel, String output) throws IOException {
         buffer.clear();
         buffer.put(output.getBytes(StandardCharsets.UTF_8));
         buffer.flip();
 
-        clientChannel.write(buffer);
+        socketChannel.write(buffer);
     }
 
 }

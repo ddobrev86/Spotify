@@ -20,4 +20,8 @@ public class InvalidArgumentCountException extends RuntimeException {
         this.command = command;
         super(message, cause);
     }
+
+    public String getCommand() {
+        return command;
+    }
 }

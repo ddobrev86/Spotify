@@ -59,7 +59,7 @@ public class SpotifyClient {
             System.out.println("show-playlist <name_of_the_playlist>");
             System.out.println("play <song>");
         }
-        System.out.println("\nEnter command: ");
+        System.out.println("\nEnter command: (use _ in the form of space)");
     }
 
     public void runClient() {

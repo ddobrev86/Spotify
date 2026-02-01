@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 public class Playlist {
+    private static final int NAME_INDEX = 0;
+    private static final int OWNER_INDEX = 1;
+    private static final int PRIVACY_INDEX = 2;
+
     private final String name;
     private Map<String, Song> songs;
     private final String ownerEmail;
@@ -18,6 +22,29 @@ public class Playlist {
         songs = new HashMap<>();
         this.ownerEmail = userEmail;
         this.isPrivate = false;
+    }
+
+    private Playlist(String name, String userEmail, boolean isPrivate) {
+        this.name = name;
+        songs = new HashMap<>();
+        this.ownerEmail = userEmail;
+        this.isPrivate = isPrivate;
+    }
+
+    public static Playlist of(String line) {
+        String[] tokens = line.split(",");
+
+        String name = tokens[NAME_INDEX];
+        String owner = tokens[OWNER_INDEX];
+        boolean isPrivate = !tokens[PRIVACY_INDEX].equals("0");
+
+        return new Playlist(name, owner, isPrivate);
+    }
+
+    /*Intentionally package-private: this method is only used during the initial setup
+    * from the database to fill the corresponding playlist with songs*/
+    void addSong(Song song) {
+        songs.put(song.name(), song);
     }
 
     public void addSong(Song song, String userEmail) {

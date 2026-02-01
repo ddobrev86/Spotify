@@ -3,14 +3,20 @@ package bg.sofia.uni.fmi.mjt.spotify.server;
 import bg.sofia.uni.fmi.mjt.spotify.command.CommandCreator;
 import bg.sofia.uni.fmi.mjt.spotify.command.CommandExecutor;
 import bg.sofia.uni.fmi.mjt.spotify.communication.ClientQuery;
+import bg.sofia.uni.fmi.mjt.spotify.communication.ResponseStatus;
 import bg.sofia.uni.fmi.mjt.spotify.communication.ServerResponse;
-import bg.sofia.uni.fmi.mjt.spotify.exceptions.song.PlaylistAlreadyExistsException;
+import bg.sofia.uni.fmi.mjt.spotify.exceptions.InvalidArgumentCountException;
+import bg.sofia.uni.fmi.mjt.spotify.exceptions.InvalidCommandException;
 import bg.sofia.uni.fmi.mjt.spotify.log.LogManager;
 import bg.sofia.uni.fmi.mjt.spotify.log.logger.PlaylistLogger;
+import bg.sofia.uni.fmi.mjt.spotify.log.logger.PlaylistToSongLogger;
 import bg.sofia.uni.fmi.mjt.spotify.log.logger.SystemLogger;
 import bg.sofia.uni.fmi.mjt.spotify.log.logger.UserLogger;
 import bg.sofia.uni.fmi.mjt.spotify.log.types.Log;
+import bg.sofia.uni.fmi.mjt.spotify.log.types.SuccessfulLog;
+import bg.sofia.uni.fmi.mjt.spotify.log.types.UserErrorLog;
 import bg.sofia.uni.fmi.mjt.spotify.model.song.Playlist;
+import bg.sofia.uni.fmi.mjt.spotify.model.song.PlaylistSongPair;
 import bg.sofia.uni.fmi.mjt.spotify.model.song.Song;
 import bg.sofia.uni.fmi.mjt.spotify.model.song.SongManager;
 import bg.sofia.uni.fmi.mjt.spotify.model.user.User;
@@ -18,6 +24,7 @@ import bg.sofia.uni.fmi.mjt.spotify.model.user.UserManager;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -42,6 +49,7 @@ public class SpotifyServer {
     private static LogManager<Log> systemLogManager;
     private static LogManager<User> userLogManager;
     private static LogManager<Playlist> playlistLogManager;
+    private static LogManager<PlaylistSongPair> songLogManager;
 
     private final UserManager userManager;
     private final SongManager songManager;
@@ -62,9 +70,10 @@ public class SpotifyServer {
         this.commandExecutor = new CommandExecutor();
 
         try {
-            systemLogManager = new LogManager<>(new SystemLogger("logs.txt"));
-            userLogManager = new LogManager<>(new UserLogger("users.txt"));
-            playlistLogManager = new LogManager<>(new PlaylistLogger("playlists.txt"));
+            systemLogManager = new LogManager<>(new SystemLogger(new File("logs.txt")));
+            userLogManager = new LogManager<>(new UserLogger(new File("users.csv")));
+            playlistLogManager = new LogManager<>(new PlaylistLogger(new File("playlists.csv")));
+            songLogManager = new LogManager<>(new PlaylistToSongLogger(new File("playlist to song.csv")));
         } catch (IOException e) {
             System.out.println("Error when connecting to database");
         }
@@ -78,15 +87,34 @@ public class SpotifyServer {
         return GSON.toJson(serverResponse);
     }
 
-    private void generateResponse(ClientQuery clientQuery) {
+    private ServerResponse processResponse(ClientQuery clientQuery) {
+        ServerResponse output;
         try {
-            commandExecutor.execute(CommandCreator.createCommand(clientQuery.command()),
-                clientQuery.email(),
-                userManager,
-                songManager);
-        } catch (PlaylistAlreadyExistsException e) {
-            System.out.println(e.getMessage());
+            output = commandExecutor.execute(CommandCreator.createCommand(clientQuery.command()),
+                clientQuery.email(), userManager, songManager);
+        } catch (InvalidArgumentCountException e) {
+            output = ServerResponse.of(ResponseStatus.FAILURE,
+                "Please follow the format for the command " + e.getCommand() + " and its arguments",
+                clientQuery.email() + " gave invalid number of arguments for command " + e.getCommand(), null);
+        } catch (InvalidCommandException e) {
+            output = ServerResponse.of(ResponseStatus.FAILURE,
+                "The given command is invalid", "An invalid command was given", null);
         }
+
+        String failureUser = clientQuery.email() != null ? clientQuery.email() : "non-logged-in user";
+        switch (output.status()) {
+            case ResponseStatus.REGISTRATION -> userLogManager.add(output.user());
+            case ResponseStatus.CREATE_PLAYLIST -> playlistLogManager.add((Playlist) output.additionalInfo());
+            case ResponseStatus.ADD_SONG ->  songLogManager.add((PlaylistSongPair) output.additionalInfo());
+        }
+
+        if (output.status() == ResponseStatus.FAILURE) {
+            systemLogManager.add(new UserErrorLog(failureUser, output.logMessage()));
+        } else {
+            systemLogManager.add(new SuccessfulLog(output.message()));
+        }
+
+        return output;
     }
 
     private void iterateKeys(Iterator<SelectionKey> keyIterator) throws IOException {
@@ -104,10 +132,7 @@ public class SpotifyServer {
 
                 ClientQuery clientQuery = processClientInput(clientInput);
 
-                ServerResponse output = commandExecutor.execute(CommandCreator.createCommand(clientQuery.command()),
-                    clientQuery.email(),
-                    userManager,
-                    songManager);
+                ServerResponse output = processResponse(clientQuery);
 
                 write(buffer, clientChannel, processOutput(output));
 
@@ -169,9 +194,9 @@ public class SpotifyServer {
     private void loadUsers() {
 //        BufferedReader reader = new BufferedReader(
 //            new InputStreamReader(
-//                new FileInputStream("users.txt"), StandardCharsets.UTF_8));
+//                new FileInputStream("users.csv"), StandardCharsets.UTF_8));
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("users.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("users.csv"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 userManager.registerUser(User.of(line));
@@ -183,14 +208,38 @@ public class SpotifyServer {
     }
 
     private void loadSongs() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("songs.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("songs.csv"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 songManager.createSong(Song.of(line));
             }
 
         } catch (IOException e) {
-            System.out.println("Could not load the users from the database");
+            System.out.println("Could not load the songs from the database");
+        }
+    }
+
+    private void loadPlaylists() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("playlists.csv"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                songManager.createPlaylist(Playlist.of(line));
+            }
+
+        } catch (IOException e) {
+            System.out.println("Could not load the playlists from the database");
+        }
+    }
+
+    private void matchSongsToPlaylists() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("playlist to song.csv"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                songManager.matchPlaylistToSong(line);
+            }
+
+        } catch (IOException e) {
+            System.out.println("Could not load the songs into playlists from the database");
         }
     }
 
@@ -198,6 +247,8 @@ public class SpotifyServer {
         SpotifyServer server = new SpotifyServer(DEFAULT_PORT, new UserManager(), new SongManager());
         server.loadUsers();
         server.loadSongs();
+        server.loadPlaylists();
+        server.matchSongsToPlaylists();
 
         server.start();
     }

@@ -2,16 +2,18 @@ package bg.sofia.uni.fmi.mjt.spotify.log.logger;
 
 import bg.sofia.uni.fmi.mjt.spotify.model.user.User;
 
+import java.io.File;
 import java.io.IOException;
 
 public class UserLogger extends Logger<User> {
 
-    public UserLogger(String fileName) throws IOException {
-        super(fileName);
+    public UserLogger(File file) throws IOException {
+        super(file);
     }
 
     @Override
     public void log(User toBeLogged)  throws IOException {
-        this.writer.write(toBeLogged.email() + " " + toBeLogged.password());
+        this.writer.write(toBeLogged.email() + "," + toBeLogged.password() + System.lineSeparator());
+        this.writer.flush();
     }
 }

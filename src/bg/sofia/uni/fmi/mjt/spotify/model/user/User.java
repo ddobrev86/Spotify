@@ -25,7 +25,7 @@ public class User {
     }
 
     public static User of(String line) {
-        String[] tokens = line.split(" ");
+        String[] tokens = line.split(",");
 
         String email = tokens[EMAIL_INDEX];
         String password = tokens[PASSWORD_INDEX];

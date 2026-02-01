@@ -26,7 +26,7 @@ public class Song {
     }
 
     public static Song of(String line) {
-        String[] tokens = line.split(" ");
+        String[] tokens = line.split(",");
 
         String name = tokens[NAME_INDEX];
         String artist = tokens[ARTIST_INDEX];

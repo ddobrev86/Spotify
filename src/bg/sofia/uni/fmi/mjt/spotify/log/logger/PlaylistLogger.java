@@ -2,27 +2,20 @@ package bg.sofia.uni.fmi.mjt.spotify.log.logger;
 
 import bg.sofia.uni.fmi.mjt.spotify.model.song.Playlist;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class PlaylistLogger extends Logger<Playlist> {
-    public PlaylistLogger(String fileName) throws IOException {
-        super(fileName);
+    public PlaylistLogger(File file) throws IOException {
+        super(file);
     }
 
     @Override
     public void log(Playlist toBeLogged) throws IOException {
         int privacy = toBeLogged.isPrivate() ? 1 : 0;
-        String header = toBeLogged.name() + " " + toBeLogged.userEmail() + " " + privacy + " " + toBeLogged.songCount();
+        String header = toBeLogged.name() + "," + toBeLogged.userEmail() + "," + privacy + System.lineSeparator();
 
         this.writer.write(header);
-        this.writer.newLine();
-
-        List<String> songs = toBeLogged.showSongsNamesOnly();
-
-        for (String song : songs) {
-            this.writer.write(song);
-            this.writer.newLine();
-        }
+        this.writer.flush();
     }
 }

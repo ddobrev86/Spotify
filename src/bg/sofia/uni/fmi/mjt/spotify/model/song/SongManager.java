@@ -13,18 +13,30 @@ import java.util.Map;
 
 public class SongManager {
     private static final String EMPTY_PLAYLIST_MESSAGE = "Playlist has no songs";
+    private static final int PLAYLIST_INDEX = 0;
+    private static final int SONG_INDEX = 1;
 
-    private Map<String, Song> allSongs;
-    private Map<String, Playlist> allPlaylists;
+    private final Map<String, Song> allSongs;
+    private final Map<String, Playlist> allPlaylists;
 
     public SongManager() {
         allSongs = new HashMap<>();
         allPlaylists = new HashMap<>();
     }
 
+    public void matchPlaylistToSong(String line) {
+        String[] tokens = line.split(",");
+
+        String playlistName = tokens[PLAYLIST_INDEX];
+        String songName = tokens[SONG_INDEX];
+
+        Song song = allSongs.get(songName);
+        allPlaylists.get(playlistName).addSong(song);
+    }
+
     public void createSong(Song song) {
         if (allSongs.containsKey(song.name())) {
-            throw new SongAlreadyExistsException(song.toString() + " already exists");
+            throw new SongAlreadyExistsException(song + " already exists");
         }
 
         allSongs.put(song.name(), song);
@@ -47,13 +59,15 @@ public class SongManager {
         allPlaylists.put(playlist.name(), playlist);
     }
 
-    public void createPlaylist(String name, String userEmail) {
+    public Playlist createPlaylist(String name, String userEmail) {
         if (allPlaylists.containsKey(name)) {
             throw new PlaylistAlreadyExistsException("Playlist " + name + " already exists");
         }
 
         Playlist playlistToAdd = new Playlist(name, userEmail);
         allPlaylists.put(name, playlistToAdd);
+
+        return playlistToAdd;
     }
 
     public List<String> search(String[] keywords) {
