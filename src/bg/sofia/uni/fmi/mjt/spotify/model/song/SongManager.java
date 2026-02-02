@@ -76,7 +76,8 @@ public class SongManager {
             .filter(song ->
                 Arrays.stream(keywords)
                     .anyMatch(keyword ->
-                        song.name().toLowerCase().contains(keyword.toLowerCase())))
+                        song.name().toLowerCase().contains(keyword.toLowerCase()) ||
+                            song.artist().toLowerCase().contains(keyword.toLowerCase())))
             .map(Song::toString)
             .toList();
     }
@@ -111,12 +112,13 @@ public class SongManager {
         return allPlaylists.get(playlistName).showPlaylist();
     }
 
-    public void playSong(String songName) {
+    public Song playSong(String songName) {
         if (!allSongs.containsKey(songName)) {
             throw new SongNotFoundException("Song " + songName + " doesn't exist");
         }
 
         allSongs.get(songName).play();
+        return allSongs.get(songName);
     }
 
     public void togglePrivacy(String playlistName, String userEmail) {

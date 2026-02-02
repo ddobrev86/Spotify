@@ -192,10 +192,6 @@ public class SpotifyServer {
     }
 
     private void loadUsers() {
-//        BufferedReader reader = new BufferedReader(
-//            new InputStreamReader(
-//                new FileInputStream("users.csv"), StandardCharsets.UTF_8));
-
         try (BufferedReader reader = new BufferedReader(new FileReader("users.csv"))) {
             String line;
             while ((line = reader.readLine()) != null) {

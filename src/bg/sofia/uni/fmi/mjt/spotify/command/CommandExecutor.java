@@ -49,6 +49,10 @@ public class CommandExecutor {
                                   String userEmail,
                                   UserManager userManager,
                                   SongManager songManager) {
+        if (cmd.command().equals(DISCONNECT)) {
+            return disconnect(userEmail);
+        }
+
         if (userEmail == null) {
             return switch (cmd.command()) {
                 case REGISTER -> register(cmd.arguments(), userManager);
@@ -63,7 +67,7 @@ public class CommandExecutor {
                 case ADD_SONG_TO -> addSongToPlaylist(cmd.arguments(), songManager, userEmail);
                 case SHOW_PLAYLIST -> showPlaylist(cmd.arguments(), songManager, userEmail);
                 case PLAY -> play(cmd.arguments(), songManager, userEmail);
-                //case DISCONNECT -> disconnect();
+                case STOP -> stop(userEmail);
                 default -> throw new InvalidCommandException("The given command is invalid");
             };
         }
@@ -239,14 +243,30 @@ public class CommandExecutor {
         String songName = args[0];
 
         try {
-            songManager.playSong(songName);
+            String songUrl = songManager.playSong(songName).url();
 
-            return ServerResponse.of(ResponseStatus.DEFAULT_SUCCESS, "Playing...",
-                userEmail + " started playing song " + songName, null);
+            return ServerResponse.of(ResponseStatus.PLAY, "Playing " + songName + "...",
+                userEmail + " started playing song " + songName, null, songUrl);
         } catch (SongNotFoundException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "There isn't a song with this name",
-                userEmail + " tried to play a non-existing song", null);
+                userEmail + " tried to initiatePlay a non-existing song", null);
         }
+    }
+
+    private ServerResponse stop(String userEmail) {
+        return ServerResponse.of(ResponseStatus.STOP,
+            "You have stopped the song",
+            userEmail + " has stopped current listening",
+            null);
+    }
+
+    private ServerResponse disconnect(String userEmail) {
+        String user = userEmail != null ? userEmail : "non-logged-in user";
+
+        return ServerResponse.of(ResponseStatus.DISCONNECT,
+            "You have disconnected from the system",
+            user + " has disconnected from the system",
+            null);
     }
 }

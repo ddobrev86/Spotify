@@ -5,5 +5,8 @@ public enum ResponseStatus {
     REGISTRATION,
     CREATE_PLAYLIST,
     ADD_SONG,
+    PLAY,
+    STOP,
+    DISCONNECT,
     FAILURE;
 }

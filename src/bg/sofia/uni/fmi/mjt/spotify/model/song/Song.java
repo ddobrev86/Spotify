@@ -6,16 +6,20 @@ public class Song {
     private static final int URL_INDEX = 2;
     private static final int TOTAL_PLAYS_INDEX = 3;
 
+    private static final int BUFFER_SIZE = 1024;
+
     private final String name;
     private final String artist;
     private final String url;
     private int totalPlays;
+    private boolean isPlaying;
 
     public Song(String name, String artist, String url, int totalPlays) {
         this.artist = artist;
         this.name = name;
         this.url = url;
         this.totalPlays = totalPlays;
+        this.isPlaying = false;
     }
 
     public Song(String name, String artist, String url) {
@@ -23,6 +27,7 @@ public class Song {
         this.name = name;
         this.url = url;
         this.totalPlays = 0;
+        this.isPlaying = false;
     }
 
     public static Song of(String line) {
@@ -36,9 +41,12 @@ public class Song {
         return new Song(name, artist, url, totalPlays);
     }
 
-    @SuppressWarnings("checkstyle:TodoComment")
     public void play() {
         totalPlays++;
+    }
+
+    public void stop() {
+        this.isPlaying = false;
     }
 
     public String name() {

@@ -1,6 +1,7 @@
 package bg.sofia.uni.fmi.mjt.spotify.client;
 
 import bg.sofia.uni.fmi.mjt.spotify.communication.ClientQuery;
+import bg.sofia.uni.fmi.mjt.spotify.communication.ResponseStatus;
 import bg.sofia.uni.fmi.mjt.spotify.communication.ServerResponse;
 import bg.sofia.uni.fmi.mjt.spotify.model.user.User;
 import com.google.gson.Gson;
@@ -16,17 +17,23 @@ import static bg.sofia.uni.fmi.mjt.spotify.util.BufferOperations.write;
 
 public class SpotifyClient {
     private static final Gson GSON = new Gson();
+    //private static final ExecutorService MUSIC_PLAYER = Executors.newVirtualThreadPerTaskExecutor();
 
     private static final int DEFAULT_PORT = 4000;
     private static final int BUFFER_SIZE = 1024;
 
+    private final MusicPlayer musicPlayer;
+
     private final int port;
     private ByteBuffer buffer;
     private User user;
+    private boolean isPlaying;
 
     public SpotifyClient(int port) {
         this.port = port;
         this.user = null;
+        this.isPlaying = false;
+        this.musicPlayer = new MusicPlayer();
     }
 
     private String processInput(String input) {
@@ -34,7 +41,7 @@ public class SpotifyClient {
         return GSON.toJson(ClientQuery.of(email, input));
     }
 
-    private ServerResponse processServerOutput(String input) {
+    private ServerResponse processServerResponse(String input) {
         return GSON.fromJson(input, ServerResponse.class);
     }
 
@@ -43,7 +50,23 @@ public class SpotifyClient {
         write(buffer, socketChannel, processInput(input));
         String reply = read(buffer, socketChannel);
 
-        return processServerOutput(reply);
+        return processServerResponse(reply);
+    }
+
+    private void handleOutput(ServerResponse output) {
+        if (output == null) {
+            return;
+        } else if (output.user() != null) {
+            this.user = output.user();
+        } else if (output.status() == ResponseStatus.PLAY) {
+            musicPlayer.play((String) output.additionalInfo());
+        } else if (output.status() == ResponseStatus.STOP) {
+            musicPlayer.stop();
+        } else if (output.status() == ResponseStatus.DISCONNECT) {
+            musicPlayer.disconnect();
+        }
+
+        System.out.println(output.message());
     }
 
     private void printAvailableCommands() {
@@ -58,8 +81,10 @@ public class SpotifyClient {
             System.out.println("add-song-to <name_of_the_playlist> <song>");
             System.out.println("show-playlist <name_of_the_playlist>");
             System.out.println("play <song>");
+            System.out.println("stop");
         }
-        System.out.println("\nEnter command: (use _ in the form of space)");
+        System.out.println("disconnect");
+        System.out.println("\nEnter command:");
     }
 
     public void runClient() {
@@ -67,9 +92,7 @@ public class SpotifyClient {
 
         try (SocketChannel socketChannel = SocketChannel.open();
              Scanner scanner = new Scanner(System.in)) {
-
             socketChannel.connect(new InetSocketAddress("localhost", port));
-
             System.out.println("Connected to server successfully");
 
             String input = "";
@@ -78,15 +101,7 @@ public class SpotifyClient {
                 input = scanner.nextLine();
                 ServerResponse output = handleServerCommunication(input, socketChannel);
 
-                if (output == null) {
-                    continue;
-                }
-
-                if (output.user() != null) {
-                    this.user = output.user();
-                }
-
-                System.out.println(output.message());
+                handleOutput(output);
             }
         } catch (IOException e) {
             throw new RuntimeException("There is a problem with the network communication", e);
