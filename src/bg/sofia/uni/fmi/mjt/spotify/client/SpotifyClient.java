@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.spotify.client;
 
+import bg.sofia.uni.fmi.mjt.spotify.client.player.MusicPlayer;
 import bg.sofia.uni.fmi.mjt.spotify.communication.ClientQuery;
 import bg.sofia.uni.fmi.mjt.spotify.communication.ResponseStatus;
 import bg.sofia.uni.fmi.mjt.spotify.communication.ServerResponse;
@@ -27,12 +28,10 @@ public class SpotifyClient {
     private final int port;
     private ByteBuffer buffer;
     private User user;
-    private boolean isPlaying;
 
     public SpotifyClient(int port) {
         this.port = port;
         this.user = null;
-        this.isPlaying = false;
         this.musicPlayer = new MusicPlayer();
     }
 
@@ -103,6 +102,7 @@ public class SpotifyClient {
 
                 handleOutput(output);
             }
+
         } catch (IOException e) {
             throw new RuntimeException("There is a problem with the network communication", e);
         }

@@ -7,8 +7,8 @@ import java.io.IOException;
 
 public class UserLogger extends Logger<User> {
 
-    public UserLogger(File file) throws IOException {
-        super(file);
+    public UserLogger(File file, boolean append) throws IOException {
+        super(file, append);
     }
 
     @Override

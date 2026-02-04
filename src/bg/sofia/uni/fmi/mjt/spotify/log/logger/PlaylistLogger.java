@@ -6,14 +6,13 @@ import java.io.File;
 import java.io.IOException;
 
 public class PlaylistLogger extends Logger<Playlist> {
-    public PlaylistLogger(File file) throws IOException {
-        super(file);
+    public PlaylistLogger(File file, boolean append) throws IOException {
+        super(file, append);
     }
 
     @Override
     public void log(Playlist toBeLogged) throws IOException {
-        int privacy = toBeLogged.isPrivate() ? 1 : 0;
-        String header = toBeLogged.name() + "," + toBeLogged.userEmail() + "," + privacy + System.lineSeparator();
+        String header = toBeLogged.name() + "," + toBeLogged.userEmail() + System.lineSeparator();
 
         this.writer.write(header);
         this.writer.flush();

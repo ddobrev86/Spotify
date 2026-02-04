@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 public class SongManager {
-    private static final String EMPTY_PLAYLIST_MESSAGE = "Playlist has no songs";
     private static final int PLAYLIST_INDEX = 0;
     private static final int SONG_INDEX = 1;
 
@@ -20,8 +19,16 @@ public class SongManager {
     private final Map<String, Playlist> allPlaylists;
 
     public SongManager() {
-        allSongs = new HashMap<>();
-        allPlaylists = new HashMap<>();
+        this.allSongs = new HashMap<>();
+        this.allPlaylists = new HashMap<>();
+    }
+
+    /**
+     * For testing purposes only
+     */
+    SongManager(Map<String, Song> allSongs, Map<String, Playlist> allPlaylists) {
+        this.allSongs = allSongs;
+        this.allPlaylists = allPlaylists;
     }
 
     public void matchPlaylistToSong(String line) {
@@ -29,6 +36,10 @@ public class SongManager {
 
         String playlistName = tokens[PLAYLIST_INDEX];
         String songName = tokens[SONG_INDEX];
+
+        if (!allPlaylists.containsKey(playlistName) || !allSongs.containsKey(songName)) {
+            throw new IllegalArgumentException("Could not load record from the database");
+        }
 
         Song song = allSongs.get(songName);
         allPlaylists.get(playlistName).addSong(song);
@@ -42,13 +53,8 @@ public class SongManager {
         allSongs.put(song.name(), song);
     }
 
-    public void createSong(String name, String artist, String url) {
-        if (allSongs.containsKey(name)) {
-            throw new SongAlreadyExistsException("Song " + name + " by " + artist + " already exists");
-        }
-
-        Song songToAdd = new Song(name, artist, url);
-        allSongs.put(name, songToAdd);
+    public void createSong(String line) {
+        createSong(Song.of(line));
     }
 
     public void createPlaylist(Playlist playlist) {
@@ -57,6 +63,10 @@ public class SongManager {
         }
 
         allPlaylists.put(playlist.name(), playlist);
+    }
+
+    public void createPlaylist(String line) {
+        createPlaylist(Playlist.of(line));
     }
 
     public Playlist createPlaylist(String name, String userEmail) {
@@ -87,7 +97,7 @@ public class SongManager {
             .stream()
             .sorted(new SongByPlaysComparator().reversed())
             .limit(topSongs)
-            .map(Song::toString)
+            .map(Song::songPlays)
             .toList();
     }
 
@@ -121,11 +131,11 @@ public class SongManager {
         return allSongs.get(songName);
     }
 
-    public void togglePrivacy(String playlistName, String userEmail) {
+    public String getPlaylistOwner(String playlistName) {
         if (!allPlaylists.containsKey(playlistName)) {
             throw new PlaylistNotFoundException("Playlist " + playlistName + " doesn't exist");
         }
 
-        allPlaylists.get(playlistName).togglePrivacy(userEmail);
+        return allPlaylists.get(playlistName).userEmail();
     }
 }

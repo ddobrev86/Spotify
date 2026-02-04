@@ -8,5 +8,5 @@ public enum ResponseStatus {
     PLAY,
     STOP,
     DISCONNECT,
-    FAILURE;
+    FAILURE
 }

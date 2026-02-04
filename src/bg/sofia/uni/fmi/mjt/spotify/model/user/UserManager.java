@@ -19,14 +19,12 @@ public class UserManager {
         return password.matches("^[A-Za-z0-9@#]+$");
     }
 
-    public User registerUser(User user) {
+    public void registerUser(User user) {
         if (users.containsKey(user.email())) {
             throw new UserAlreadyRegisteredException("User with email " + user.email() + " is already registered");
         }
 
         users.put(user.email(), user);
-
-        return user;
     }
 
     public User registerUser(String email, String password) {
@@ -43,6 +41,10 @@ public class UserManager {
         users.put(email, userToAdd);
 
         return userToAdd;
+    }
+
+    public void registerUser(String line) {
+        registerUser(User.of(line));
     }
 
     public User login(String email, String password) {

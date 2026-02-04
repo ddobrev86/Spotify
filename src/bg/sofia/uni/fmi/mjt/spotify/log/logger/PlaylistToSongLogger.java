@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class PlaylistToSongLogger extends Logger<PlaylistSongPair> {
-    public PlaylistToSongLogger(File file) throws IOException {
-        super(file);
+    public PlaylistToSongLogger(File file, boolean append) throws IOException {
+        super(file, append);
     }
 
     @Override

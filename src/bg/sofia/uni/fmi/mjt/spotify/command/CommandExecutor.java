@@ -19,6 +19,7 @@ import bg.sofia.uni.fmi.mjt.spotify.model.song.SongManager;
 import bg.sofia.uni.fmi.mjt.spotify.model.user.User;
 import bg.sofia.uni.fmi.mjt.spotify.model.user.UserManager;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class CommandExecutor {
@@ -73,6 +74,13 @@ public class CommandExecutor {
         }
     }
 
+    public String logFailureMessage(String message, Exception e) {
+        if (e == null) {
+            return message;
+        }
+        return message + System.lineSeparator() + "  " + Arrays.toString(e.getStackTrace());
+    }
+
     private ServerResponse register(String[] args, UserManager userManager) {
         if (args.length != ACCOUNT_OPERATIONS_ARGUMENT_COUNT) {
             throw new InvalidArgumentCountException(REGISTER + " accepts only two values: email and password." +
@@ -90,11 +98,11 @@ public class CommandExecutor {
         } catch (UserAlreadyRegisteredException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "User with email " + email + " is already registered",
-                "Attempt to re-register with an existing email " + email, null);
+                logFailureMessage("Attempt to re-register with an existing email " + email, e), null);
         } catch (InvalidPasswordException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "The given password is invalid. A valid password must contain only  letters, digits, @ and #",
-                "Invalid password given on registration", null);
+                logFailureMessage("Invalid password given on registration", e), null);
         }
     }
 
@@ -109,16 +117,17 @@ public class CommandExecutor {
 
         try {
             User loggedInUser = userManager.login(email, password);
-            return ServerResponse.of(ResponseStatus.DEFAULT_SUCCESS, "User " + email + " logged in successfully",
-                "", loggedInUser);
+            return ServerResponse.of(ResponseStatus.DEFAULT_SUCCESS,
+                "User " + email + " logged in successfully",
+                "User " + email + " logged in successfully", loggedInUser);
         } catch (UserNotRegisteredException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "You are not registered into the system",
-                "User " + email + " attempted to login without a registration", null);
+                logFailureMessage("User " + email + " attempted to login without a registration", e), null);
         } catch (IncorrectPasswordException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "Wrong password!",
-                "User " + email + " gave a wrong password upon login", null);
+                logFailureMessage("User " + email + " gave a wrong password upon login", e), null);
         }
     }
 
@@ -140,7 +149,7 @@ public class CommandExecutor {
 
         return ServerResponse.of(ResponseStatus.DEFAULT_SUCCESS, showSongsAsString(result,
             "There are no songs that match the given keywords"),
-            "", null);
+            userEmail + " searched by keywords " + String.join(", ", args), null);
     }
 
     private ServerResponse top(String[] args, SongManager songManager, String userEmail) {
@@ -153,13 +162,13 @@ public class CommandExecutor {
             int number = Integer.parseUnsignedInt(args[0]);
             List<String> result = songManager.top(number);
 
-            return ServerResponse.of(ResponseStatus.DEFAULT_SUCCESS, showSongsAsString(result,
-                    "There are no songs to show"),
+            return ServerResponse.of(ResponseStatus.DEFAULT_SUCCESS,
+                showSongsAsString(result, "There are no songs to show"),
                 userEmail + " searched top " + number + " most listened songs", null);
         } catch (NumberFormatException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "Please enter a valid positive number",
-                "Unparsable number given to 'top' command", null);
+                logFailureMessage("Unparsable number given to 'top' command", e), null);
         }
     }
 
@@ -179,38 +188,39 @@ public class CommandExecutor {
         } catch (PlaylistAlreadyExistsException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "Playlist " + playlistName + " already exists",
-                userEmail + " tried to create playlist " + playlistName + ", which already exists", null);
+                logFailureMessage(userEmail + " tried to create playlist " +
+                    playlistName + ", which already exists", e), null);
         }
     }
 
     private ServerResponse addSongToPlaylist(String[] args, SongManager songManager, String userEmail) {
         if (args.length != ADD_SONG_TO_PLAYLIST_ARGUMENT_COUNT) {
-            throw new InvalidArgumentCountException(ADD_SONG_TO +
-                " accepts only two values: name_of_playlist and song." +
-                "Example: " + ADD_SONG_TO + " <name_of_playlist> <song>", ADD_SONG_TO);
+            throw new InvalidArgumentCountException(ADD_SONG_TO + " accepts only two values: name_of_playlist and song."
+                + "Example: " + ADD_SONG_TO + " <name_of_playlist> <song>", ADD_SONG_TO);
         }
 
         String playlistName = args[0];
         String songName = args[1];
-
         try {
             songManager.addSongToPlaylist(playlistName, songName, userEmail);
             return ServerResponse.of(ResponseStatus.ADD_SONG,
-                "Song " + songName + " added successfully to " + playlistName,
-                userEmail + " added song " + songName + " to playlist " + playlistName, null,
-                new PlaylistSongPair(playlistName, songName));
+                "Song " + songName + " added successfully to " + playlistName, userEmail + " added song "
+                    + songName + " to playlist " + playlistName, null, new PlaylistSongPair(playlistName, songName));
         } catch (PlaylistNotFoundException e) {
             return ServerResponse.of(ResponseStatus.FAILURE, "There isn't a playlist with this name",
-                userEmail + " tried to add a song to non-existing playlist", null);
+                logFailureMessage(userEmail + " tried to add a song to non-existing playlist", e), null);
         } catch (SongNotFoundException e) {
             return ServerResponse.of(ResponseStatus.FAILURE, "There isn't a song with this name",
-                userEmail + " tried to add a non-existing song to a playlist", null);
+                logFailureMessage(userEmail + " tried to add a non-existing song to a playlist", e), null);
         } catch (InvalidPlaylistOwnershipException e) {
-            return ServerResponse.of(ResponseStatus.FAILURE, "This playlist is private. You can't add a song to it",
-                userEmail + " tried to add a song to a private playlist, that he does not own", null);
+            return ServerResponse.of(ResponseStatus.FAILURE,
+                "You don't own this playlist. You can't add a song to it",
+                logFailureMessage(userEmail + " tried to add a song to a private playlist, " +
+                    "that he does not own", e), null);
         } catch (SongAlreadyExistsException e) {
             return ServerResponse.of(ResponseStatus.FAILURE, "The song is already in the playlist",
-                userEmail + " tried to re-add " + songName + " to playlist " + playlistName, null);
+                logFailureMessage(userEmail + " tried to re-add " + songName + " to playlist "
+                    + playlistName, e), null);
         }
     }
 
@@ -223,14 +233,15 @@ public class CommandExecutor {
         String playlistName = args[0];
         try {
             List<String> result = songManager.showPlaylist(playlistName);
+            String owner = "Owner: " + songManager.getPlaylistOwner(playlistName) + System.lineSeparator();
 
-            return ServerResponse.of(ResponseStatus.DEFAULT_SUCCESS, showSongsAsString(result,
-                "Playlist is empty"),
+            return ServerResponse.of(ResponseStatus.DEFAULT_SUCCESS,
+                owner + showSongsAsString(result, "Playlist is empty"),
                 "show_playlist command executed by " + userEmail + " for playlist " + playlistName, null);
         } catch (PlaylistNotFoundException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "There isn't a playlist with this name",
-                userEmail + " tried to view a non-existing playlist", null);
+                logFailureMessage(userEmail + " tried to view a non-existing playlist", e), null);
         }
     }
 
@@ -250,7 +261,7 @@ public class CommandExecutor {
         } catch (SongNotFoundException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
                 "There isn't a song with this name",
-                userEmail + " tried to initiatePlay a non-existing song", null);
+                logFailureMessage(userEmail + " tried to initiatePlay a non-existing song", e), null);
         }
     }
 

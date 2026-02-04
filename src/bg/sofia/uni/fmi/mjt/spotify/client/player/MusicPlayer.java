@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.spotify.client;
+package bg.sofia.uni.fmi.mjt.spotify.client.player;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

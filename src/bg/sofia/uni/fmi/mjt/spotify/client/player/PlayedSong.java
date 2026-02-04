@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.spotify.client;
+package bg.sofia.uni.fmi.mjt.spotify.client.player;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -40,15 +40,11 @@ public class PlayedSong implements Runnable {
             dataLine.drain();
             dataLine.stop();
             dataLine.close();
-            isPlaying = false;
 
-        } catch (IOException e) {
-            System.out.println("error");
-        } catch (LineUnavailableException e) {
-            System.out.println("error2");
-        } catch (UnsupportedAudioFileException e) {
-            System.out.println("error3");
+        } catch (IOException | LineUnavailableException | UnsupportedAudioFileException e) {
+            System.out.println("Could not play song");
         }
+        isPlaying = false;
     }
 
     public void stop() {

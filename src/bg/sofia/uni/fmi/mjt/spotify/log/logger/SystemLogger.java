@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class SystemLogger extends Logger<Log> {
-    public SystemLogger(File file) throws IOException {
-        super(file);
+    public SystemLogger(File file, boolean append) throws IOException {
+        super(file, append);
     }
 
     @Override

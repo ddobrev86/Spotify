@@ -6,54 +6,51 @@ import bg.sofia.uni.fmi.mjt.spotify.exceptions.song.SongAlreadyExistsException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Playlist {
+    private static final int ARGUMENT_COUNT = 2;
+
     private static final int NAME_INDEX = 0;
     private static final int OWNER_INDEX = 1;
-    private static final int PRIVACY_INDEX = 2;
 
     private final String name;
-    private Map<String, Song> songs;
+    private final Map<String, Song> songs;
     private final String ownerEmail;
-    private boolean isPrivate;
 
     public Playlist(String name, String userEmail) {
         this.name = name;
         songs = new HashMap<>();
         this.ownerEmail = userEmail;
-        this.isPrivate = false;
-    }
-
-    private Playlist(String name, String userEmail, boolean isPrivate) {
-        this.name = name;
-        songs = new HashMap<>();
-        this.ownerEmail = userEmail;
-        this.isPrivate = isPrivate;
     }
 
     public static Playlist of(String line) {
         String[] tokens = line.split(",");
+        if (tokens.length != ARGUMENT_COUNT) {
+            throw new IllegalArgumentException("Invalid input for playlist");
+        }
 
-        String name = tokens[NAME_INDEX];
-        String owner = tokens[OWNER_INDEX];
-        boolean isPrivate = !tokens[PRIVACY_INDEX].equals("0");
+        String name = tokens[NAME_INDEX].strip();
+        String owner = tokens[OWNER_INDEX].strip();
 
-        return new Playlist(name, owner, isPrivate);
+        return new Playlist(name, owner);
     }
 
-    /*Intentionally package-private: this method is only used during the initial setup
-    * from the database to fill the corresponding playlist with songs*/
+    /**
+     * Intentionally package-private: this method is only used during the initial setup
+     * from the database to fill the corresponding playlist with songs
+     */
     void addSong(Song song) {
         songs.put(song.name(), song);
     }
 
     public void addSong(Song song, String userEmail) {
-        if (isPrivate && !this.ownerEmail.equals(userEmail)) {
-            throw new InvalidPlaylistOwnershipException("You don't own this private playlist and cannot add a song");
+        if (!this.ownerEmail.equals(userEmail)) {
+            throw new InvalidPlaylistOwnershipException("You don't own this playlist and cannot add a song");
         }
 
         if (songs.containsKey(song.name())) {
-            throw new SongAlreadyExistsException(song.toString() + "is already in playlist " + this.name);
+            throw new SongAlreadyExistsException(song + "is already in playlist " + this.name);
         }
         songs.put(song.name(), song);
     }
@@ -65,13 +62,6 @@ public class Playlist {
             .toList();
     }
 
-    public List<String> showSongsNamesOnly() {
-        return songs.values()
-            .stream()
-            .map(Song::name)
-            .toList();
-    }
-
     public String name() {
         return this.name;
     }
@@ -80,19 +70,17 @@ public class Playlist {
         return this.ownerEmail;
     }
 
-    public boolean isPrivate() {
-        return this.isPrivate;
-    }
-
-    public int songCount() {
-        return this.songs.size();
-    }
-
-    public void togglePrivacy(String userEmail) {
-        if (!this.ownerEmail.equals(userEmail)) {
-            throw new InvalidPlaylistOwnershipException("You don't own this playlist and cannot change it's privacy");
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
+        Playlist playlist = (Playlist) o;
+        return Objects.equals(name, playlist.name);
+    }
 
-        this.isPrivate = !this.isPrivate;
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
     }
 }
