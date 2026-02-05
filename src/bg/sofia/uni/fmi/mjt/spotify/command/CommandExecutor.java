@@ -26,7 +26,7 @@ public class CommandExecutor {
     private static final String SEARCH = "search";
     private static final String TOP = "top";
     private static final String CREATE_PLAYLIST = "create-playlist";
-    private static final String ADD_SONG_TO = "add-song-to";
+    private static final String ADD_SONG = "add-song-to";
     private static final String SHOW_PLAYLIST = "show-playlist";
     private static final String PLAY = "play";
     private static final String STOP = "stop";
@@ -65,7 +65,7 @@ public class CommandExecutor {
                 case SEARCH -> search(cmd.arguments(), songManager, userEmail);
                 case TOP -> top(cmd.arguments(), songManager, userEmail);
                 case CREATE_PLAYLIST -> createPlaylist(cmd.arguments(), songManager, userEmail);
-                case ADD_SONG_TO -> addSongToPlaylist(cmd.arguments(), songManager, userEmail);
+                case ADD_SONG -> addSongToPlaylist(cmd.arguments(), songManager, userEmail);
                 case SHOW_PLAYLIST -> showPlaylist(cmd.arguments(), songManager, userEmail);
                 case PLAY -> play(cmd.arguments(), songManager, userEmail);
                 case STOP -> stop(userEmail);
@@ -83,8 +83,8 @@ public class CommandExecutor {
 
     private ServerResponse register(String[] args, UserManager userManager) {
         if (args.length != ACCOUNT_OPERATIONS_ARGUMENT_COUNT) {
-            throw new InvalidArgumentCountException(REGISTER + " accepts only two values: email and password." +
-                "Example: " + REGISTER + " <email> <password>", REGISTER);
+            throw new InvalidArgumentCountException(REGISTER + " accepts exactly two values: email and password." +
+                System.lineSeparator() + "Example: " + REGISTER + " <email> <password>", REGISTER);
         }
 
         String email = args[0];
@@ -101,15 +101,15 @@ public class CommandExecutor {
                 logFailureMessage("Attempt to re-register with an existing email " + email, e), null);
         } catch (InvalidPasswordException e) {
             return ServerResponse.of(ResponseStatus.FAILURE,
-                "The given password is invalid. A valid password must contain only  letters, digits, @ and #",
+                "The given password is invalid. A valid password must contain only letters, digits, @ and #",
                 logFailureMessage("Invalid password given on registration", e), null);
         }
     }
 
     private ServerResponse login(String[] args, UserManager userManager) {
         if (args.length != ACCOUNT_OPERATIONS_ARGUMENT_COUNT) {
-            throw new InvalidArgumentCountException(LOGIN + " accepts only two values: email and password." +
-                "Example: " + LOGIN + " <email> <password>", LOGIN);
+            throw new InvalidArgumentCountException(LOGIN + " accepts exactly two values: email and password." +
+                System.lineSeparator() + "Example: " + LOGIN + " <email> <password>", LOGIN);
         }
 
         String email = args[0];
@@ -142,7 +142,7 @@ public class CommandExecutor {
     private ServerResponse search(String[] args, SongManager songManager, String userEmail) {
         if (args.length < SEARCH_MIN_ARGUMENT_COUNT) {
             throw new InvalidArgumentCountException(SEARCH + " must be given at least one keyword." +
-                "Example: " + SEARCH + " <keyword> [<keywords>]", SEARCH);
+                System.lineSeparator() + "Example: " + SEARCH + " <keyword> [<keywords>]", SEARCH);
         }
 
         List<String> result = songManager.search(args);
@@ -154,8 +154,8 @@ public class CommandExecutor {
 
     private ServerResponse top(String[] args, SongManager songManager, String userEmail) {
         if (args.length != TOP_ARGUMENT_COUNT) {
-            throw new InvalidArgumentCountException(TOP + " accepts only one value: number." +
-                "Example: " + TOP + " <number>", TOP);
+            throw new InvalidArgumentCountException(TOP + " accepts exactly one value: number." +
+                System.lineSeparator() + "Example: " + TOP + " <number>", TOP);
         }
 
         try {
@@ -174,8 +174,8 @@ public class CommandExecutor {
 
     private ServerResponse createPlaylist(String[] args, SongManager songManager, String userEmail) {
         if (args.length != CREATE_PLAYLIST_ARGUMENT_COUNT) {
-            throw new InvalidArgumentCountException(CREATE_PLAYLIST + " accepts only one value: name_of_playlist." +
-                "Example: " + CREATE_PLAYLIST + " <name_of_playlist>", CREATE_PLAYLIST);
+            throw new InvalidArgumentCountException(CREATE_PLAYLIST + " accepts exactly one value: name_of_playlist." +
+                System.lineSeparator() + "Example: " + CREATE_PLAYLIST + " <name_of_playlist>", CREATE_PLAYLIST);
         }
 
         String playlistName = args[0];
@@ -195,8 +195,8 @@ public class CommandExecutor {
 
     private ServerResponse addSongToPlaylist(String[] args, SongManager songManager, String userEmail) {
         if (args.length != ADD_SONG_TO_PLAYLIST_ARGUMENT_COUNT) {
-            throw new InvalidArgumentCountException(ADD_SONG_TO + " accepts only two values: name_of_playlist and song."
-                + "Example: " + ADD_SONG_TO + " <name_of_playlist> <song>", ADD_SONG_TO);
+            throw new InvalidArgumentCountException(ADD_SONG + " accepts exactly two values: name_of_playlist and " +
+                "song." + System.lineSeparator() + "Example: " + ADD_SONG + " <name_of_playlist> <song>", ADD_SONG);
         }
 
         String playlistName = args[0];
@@ -226,8 +226,8 @@ public class CommandExecutor {
 
     private ServerResponse showPlaylist(String[] args, SongManager songManager, String userEmail) {
         if (args.length != SHOW_PLAYLIST_ARGUMENT_COUNT) {
-            throw new InvalidArgumentCountException(SHOW_PLAYLIST + " accepts only one value: name_of_playlist." +
-                "Example: " + SHOW_PLAYLIST + " <name_of_playlist>", SHOW_PLAYLIST);
+            throw new InvalidArgumentCountException(SHOW_PLAYLIST + " accepts exactly one value: name_of_playlist." +
+                System.lineSeparator() + "Example: " + SHOW_PLAYLIST + " <name_of_playlist>", SHOW_PLAYLIST);
         }
 
         String playlistName = args[0];
@@ -247,8 +247,8 @@ public class CommandExecutor {
 
     private ServerResponse play(String[] args, SongManager songManager, String userEmail) {
         if (args.length != PLAY_ARGUMENT_COUNT) {
-            throw new InvalidArgumentCountException(PLAY + " accepts only one value: song." +
-                "Example: " + PLAY + " <song>", PLAY);
+            throw new InvalidArgumentCountException(PLAY + " accepts exactly one value: song." +
+                System.lineSeparator() + "Example: " + PLAY + " <song>", PLAY);
         }
 
         String songName = args[0];
@@ -267,7 +267,7 @@ public class CommandExecutor {
 
     private ServerResponse stop(String userEmail) {
         return ServerResponse.of(ResponseStatus.STOP,
-            "You have stopped the song",
+            "Song stopped",
             userEmail + " has stopped current listening",
             null);
     }

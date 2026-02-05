@@ -118,7 +118,7 @@ public class SpotifyServer {
         if (output.status() == ResponseStatus.FAILURE) {
             systemLogManager.add(new UserErrorLog(failureUser, output.logMessage()));
         } else {
-            systemLogManager.add(new SuccessfulLog(output.message()));
+            systemLogManager.add(new SuccessfulLog(output.logMessage()));
         }
     }
 
@@ -129,7 +129,7 @@ public class SpotifyServer {
                 clientQuery.email(), userManager, songManager);
         } catch (InvalidArgumentCountException e) {
             output = ServerResponse.of(ResponseStatus.FAILURE,
-                "Please follow the format for the command " + e.getCommand() + " and its arguments count",
+                e.getMessage(),
                 commandExecutor.logFailureMessage(clientQuery.email() + " gave invalid number of arguments for " +
                     "command " + e.getCommand(), e), null);
         } catch (InvalidCommandException e) {
@@ -173,6 +173,8 @@ public class SpotifyServer {
         channel.bind(new InetSocketAddress(HOST, this.port));
         channel.configureBlocking(false);
         channel.register(selector, SelectionKey.OP_ACCEPT);
+
+        //System.out.println(channel.getLocalAddress());
     }
 
     private void accept(Selector selector, SelectionKey key) throws IOException {

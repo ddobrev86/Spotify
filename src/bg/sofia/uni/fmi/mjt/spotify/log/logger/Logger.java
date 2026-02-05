@@ -6,8 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public abstract class Logger<T> {
-    //protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-
     protected final BufferedWriter writer;
 
     public Logger(File file, boolean append) throws IOException {

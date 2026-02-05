@@ -5,11 +5,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class MusicPlayer {
-    private final ExecutorService player = Executors.newSingleThreadExecutor();
+    private final ExecutorService player;
     private Future<?> currentTask;
-    private PlayedSong currentSong = null;
+    private PlayedSong currentSong;
 
-    public synchronized void play(String url) {
+    public MusicPlayer() {
+        this.player = Executors.newSingleThreadExecutor();
+        this.currentSong = null;
+    }
+
+    public void play(String url) {
         if (currentTask != null && !currentTask.isDone()) {
             currentSong.stop();
         }
