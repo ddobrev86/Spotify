@@ -22,6 +22,7 @@ public class SpotifyClient {
 
     private static final int DEFAULT_PORT = 4000;
     private static final int BUFFER_SIZE = 1024;
+    private static final String DEFAULT_HOST = "localhost";
 
     private final MusicPlayer musicPlayer;
 
@@ -91,7 +92,7 @@ public class SpotifyClient {
 
         try (SocketChannel socketChannel = SocketChannel.open();
              Scanner scanner = new Scanner(System.in)) {
-            socketChannel.connect(new InetSocketAddress("localhost", port));
+            socketChannel.connect(new InetSocketAddress(DEFAULT_HOST, port));
             System.out.println("Connected to server successfully");
 
             String input = "";

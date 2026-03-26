@@ -151,8 +151,6 @@ public class SpotifyServer {
                 String clientInput = read(buffer, clientChannel);
                 if (clientInput == null) {
                     continue;
-                } else if (clientInput.equals("disconnect")) {
-                    clientChannel.close();
                 }
 
                 ClientQuery clientQuery = processClientInput(clientInput);
@@ -160,6 +158,10 @@ public class SpotifyServer {
                 ServerResponse output = processResponse(clientQuery);
 
                 write(buffer, clientChannel, processOutput(output));
+
+                if (clientInput.equals("disconnect")) {
+                    clientChannel.close();
+                }
 
             } else if (key.isAcceptable()) {
                 accept(selector, key);
